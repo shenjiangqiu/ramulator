@@ -2,7 +2,7 @@
 #define __PROCESSOR_H
 
 #include "Cache.h"
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "Memory.h"
 #include "Request.h"
 #include "Statistics.h"

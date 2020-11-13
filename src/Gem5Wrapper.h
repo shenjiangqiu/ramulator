@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "Config.h"
+#include "RamulatorConfig.h"
 
 using namespace std;
 

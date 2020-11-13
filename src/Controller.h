@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "DRAM.h"
 #include "Refresh.h"
 #include "Request.h"

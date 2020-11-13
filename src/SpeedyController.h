@@ -1,7 +1,7 @@
 #ifndef __SPEEDYCONTROLLER_H
 #define __SPEEDYCONTROLLER_H
 
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "DRAM.h"
 #include "Request.h"
 #include "Statistics.h"

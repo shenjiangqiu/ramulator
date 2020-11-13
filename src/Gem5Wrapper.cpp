@@ -1,7 +1,7 @@
 #include <map>
 
 #include "Gem5Wrapper.h"
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "Request.h"
 #include "MemoryFactory.h"
 #include "Memory.h"

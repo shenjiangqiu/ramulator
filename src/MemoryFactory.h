@@ -5,7 +5,7 @@
 #include <string>
 #include <cassert>
 
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "Memory.h"
 
 #include "WideIO2.h"

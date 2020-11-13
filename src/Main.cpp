@@ -1,5 +1,5 @@
 #include "Processor.h"
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "Controller.h"
 #include "SpeedyController.h"
 #include "Memory.h"
@@ -175,7 +175,7 @@ void start_run(const Config& configs, T* spec, const vector<const char*>& files)
   }
 }
 
-int main(int argc, const char *argv[])
+int ramulator_main(int argc, const char *argv[])
 {
     if (argc < 2) {
         printf("Usage: %s <configs-file> --mode=cpu,dram [--stats <filename>] <trace-filename1> <trace-filename2>\n"

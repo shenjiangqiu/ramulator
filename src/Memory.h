@@ -1,7 +1,7 @@
 #ifndef __MEMORY_H
 #define __MEMORY_H
 
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "DRAM.h"
 #include "Request.h"
 #include "Controller.h"

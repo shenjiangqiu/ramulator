@@ -1,4 +1,4 @@
-#include "Config.h"
+#include "RamulatorConfig.h"
 
 using namespace std;
 using namespace ramulator;

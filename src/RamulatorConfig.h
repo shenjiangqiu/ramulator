@@ -1,5 +1,5 @@
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef RAMULATOR__CONFIG_H
+#define RAMULATOR__CONFIG_H
 
 #include <string>
 #include <fstream>
@@ -20,7 +20,7 @@ private:
     int subarrays;
     int cpu_tick;
     int mem_tick;
-    int core_num = 0;
+    int core_num = 1;
     long expected_limit_insts = 0;
     long warmup_insts = 0;
 

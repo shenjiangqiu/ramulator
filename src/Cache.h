@@ -1,7 +1,7 @@
 #ifndef __CACHE_H
 #define __CACHE_H
 
-#include "Config.h"
+#include "RamulatorConfig.h"
 #include "Request.h"
 #include "Statistics.h"
 #include <algorithm>

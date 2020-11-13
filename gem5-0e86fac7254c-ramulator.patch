@@ -448,7 +448,7 @@ diff -r 0e86fac7254c -r d1234c44d57e src/mem/ramulator.hh
 +
 +#include "mem/abstract_mem.hh"
 +#include "params/Ramulator.hh"
-+#include "Ramulator/src/Config.h"
++#include "Ramulator/src/RamulatorConfig.h"
 +
 +namespace ramulator{
 +    class Request;
