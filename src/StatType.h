@@ -164,7 +164,7 @@ class Stat : public StatBase {
 
   size_type size() const { return 0; }
 
-  virtual void print(std::ofstream& file) {};
+  virtual void print(std::ofstream& ) {};
   virtual void printname(std::ofstream& file) {
     file.width(40);
     file << _name;
