@@ -65,18 +65,18 @@ void PCM::init_speed()
     int page = (org_entry.dq * org_entry.count[int(Level::Column)]) >> 13;
     switch (speed_entry.rate) {
         case 800:  speed_entry.nFAW = (page==1) ? 16 : 20; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
 
     // nRFC, nXS
     int chip = org_entry.size;
     switch (speed_entry.rate) {
         case 800:  speed_entry.nRFC = 0; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
     switch (speed_entry.rate) {
         case 800:  speed_entry.nXS  = (chip==512) ? 40  : (chip==1<<10) ? 48  : (chip==1<<11) ? 68  : (chip==1<<12) ? 108 : 144; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
 }
 
@@ -90,7 +90,7 @@ void PCM::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<PCM>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -99,7 +99,7 @@ void PCM::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -122,7 +122,7 @@ void PCM::init_prereq()
             case int(State::ActPowerDown): return Command::PDE;
             case int(State::PrePowerDown): return Command::PDE;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -132,7 +132,7 @@ void PCM::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -148,7 +148,7 @@ void PCM::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -162,7 +162,7 @@ void PCM::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR

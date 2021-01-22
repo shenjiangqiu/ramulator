@@ -63,13 +63,13 @@ void HBM::init_speed()
     int speed = 0, density = 0;
     switch (speed_entry.rate) {
         case 1000: speed = 0; break;
-        default: assert(false);
+        default: throw false;assert(false);
     };
     switch (org_entry.size >> 10){
         case 1: density = 0; break;
         case 2: density = 1; break;
         case 4: density = 2; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
     speed_entry.nRFC = RFC_TABLE[speed][density];
     speed_entry.nREFI1B = REFI1B_TABLE[speed][density];
@@ -86,7 +86,7 @@ void HBM::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<HBM>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -95,7 +95,7 @@ void HBM::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 else return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -124,7 +124,7 @@ void HBM::init_prereq()
             case int(State::ActPowerDown): return Command::PDE;
             case int(State::PrePowerDown): return Command::PDE;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -134,7 +134,7 @@ void HBM::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -149,7 +149,7 @@ void HBM::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -163,7 +163,7 @@ void HBM::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR

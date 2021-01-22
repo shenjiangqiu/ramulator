@@ -354,7 +354,7 @@ bool Cache::need_eviction(const std::list<Line>& lines, long addr) {
         return (get_tag(addr) == l.tag);})
       != lines.end()) {
     // Due to MSHR, the program can't reach here. Just for checking
-    assert(false);
+    throw false;assert(false);
   } else {
     if (lines.size() < assoc) {
       return false;

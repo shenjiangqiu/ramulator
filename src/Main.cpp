@@ -196,7 +196,7 @@ int ramulator_main(int argc, const char *argv[])
       configs.add("trace_type", "DRAM");
     } else {
       printf("invalid trace type: %s\n", trace_type);
-      assert(false);
+      throw false;assert(false);
     }
 
     int trace_start = 3;

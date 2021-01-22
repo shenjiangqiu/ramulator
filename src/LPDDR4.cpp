@@ -83,7 +83,7 @@ void LPDDR4::init_speed()
         case 1600: speed = 0; break;
         case 2400: speed = 1; break;
         case 3200: speed = 2; break;
-        default: assert(false);
+        default: throw false;assert(false);
     };
     switch (org_entry.size >> 10){
         case 2: density = 0; break;
@@ -107,7 +107,7 @@ void LPDDR4::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SREFX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<LPDDR4>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -116,7 +116,7 @@ void LPDDR4::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -139,7 +139,7 @@ void LPDDR4::init_prereq()
             case int(State::ActPowerDown): return Command::PDE;
             case int(State::PrePowerDown): return Command::PDE;
             case int(State::SelfRefresh): return Command::SREFX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -149,7 +149,7 @@ void LPDDR4::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SREF;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -164,7 +164,7 @@ void LPDDR4::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -178,7 +178,7 @@ void LPDDR4::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR

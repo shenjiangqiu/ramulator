@@ -111,7 +111,7 @@ void DSARP::init_speed()
   int speed = 0, density = 0;
   switch (speed_entry.rate) {
     case 1333: speed = 0; break;
-    default: assert(false);
+    default: throw false;assert(false);
   };
   switch (org_entry.size >> 10){
     case 8: density = 0; break;
@@ -135,7 +135,7 @@ void DSARP::init_prereq()
       case int(State::ActPowerDown): return Command::PDX;
       case int(State::PrePowerDown): return Command::PDX;
       case int(State::SelfRefresh): return Command::SRX;
-      default: assert(false);
+      default: throw false;assert(false);
     }};
   // Rank transitions to Bank
   prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<DSARP>* node, Command cmd, int id) {
@@ -146,7 +146,7 @@ void DSARP::init_prereq()
         if (node->row_state.find(id) != node->row_state.end())
           return Command::MAX;
         return Command::PRE;
-      default: assert(false);
+      default: throw false;assert(false);
     }};
   // Bank transitions to Subarray
   prereq[int(Level::SubArray)][int(Command::RD)] = [] (DRAM<DSARP>* node, Command cmd, int id) {
@@ -157,7 +157,7 @@ void DSARP::init_prereq()
         if (node->row_state.find(id) != node->row_state.end())
           return cmd;
         return Command::PRE;
-      default: assert(false);
+      default: throw false;assert(false);
     }};
 
   // WR
@@ -186,7 +186,7 @@ void DSARP::init_prereq()
       case int(State::ActPowerDown): return Command::PDE;
       case int(State::PrePowerDown): return Command::PDE;
       case int(State::SelfRefresh): return Command::SRX;
-      default: assert(false);
+      default: throw false;assert(false);
     }};
 
   // SR
@@ -196,7 +196,7 @@ void DSARP::init_prereq()
       case int(State::ActPowerDown): return Command::PDX;
       case int(State::PrePowerDown): return Command::PDX;
       case int(State::SelfRefresh): return Command::SRE;
-      default: assert(false);
+      default: throw false;assert(false);
     }};
 }
 
@@ -210,7 +210,7 @@ void DSARP::init_rowhit()
           case int(State::Opened):
               if (node->row_state.find(id) != node->row_state.end()) return true;
               else return false;
-          default: assert(false);
+          default: throw false;assert(false);
       }};
   // WR
   rowhit[int(Level::SubArray)][int(Command::WR)] = rowhit[int(Level::SubArray)][int(Command::RD)];
@@ -223,7 +223,7 @@ void DSARP::init_rowopen()
       switch (int(node->state)){
           case int(State::Closed): return false;
           case int(State::Opened): return true;
-          default: assert(false);
+          default: throw false;assert(false);
       }};
   // WR
   rowopen[int(Level::SubArray)][int(Command::WR)] = rowopen[int(Level::SubArray)][int(Command::RD)];

@@ -97,13 +97,13 @@ void DDR4::init_speed()
         case 2133: speed = 2; break;
         case 2400: speed = 3; break;
         case 3200: speed = 4; break;
-        default: assert(false);
+        default: throw false;assert(false);
     };
     switch (org_entry.size >> 10){
         case 2: density = 0; break;
         case 4: density = 1; break;
         case 8: density = 2; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
     speed_entry.nRRDS = RRDS_TABLE[org_entry.dq == 16? 1: 0][speed];
     speed_entry.nRRDL = RRDL_TABLE[org_entry.dq == 16? 1: 0][speed];
@@ -123,7 +123,7 @@ void DDR4::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<DDR4>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -132,7 +132,7 @@ void DDR4::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 else return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -156,7 +156,7 @@ void DDR4::init_prereq()
             case int(State::ActPowerDown): return Command::PDE;
             case int(State::PrePowerDown): return Command::PDE;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -166,7 +166,7 @@ void DDR4::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -181,7 +181,7 @@ void DDR4::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -195,7 +195,7 @@ void DDR4::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR

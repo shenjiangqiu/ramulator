@@ -64,14 +64,14 @@ void WideIO::init_speed()
     switch(speed_entry.rate){
         case 200: speed = 0; break;
         case 266: speed = 1; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
     switch(org_entry.size >> 8){
         case 1: density = 0; break;
         case 2: density = 1; break;
         case 4: density = 2; break;
         case 8: density = 3; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
     speed_entry.nRFC = RFC_TABLE[speed][density];
     speed_entry.nREFI = REFI_TABLE[speed][density];
@@ -87,7 +87,7 @@ void WideIO::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SREFX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<WideIO>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -96,7 +96,7 @@ void WideIO::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -119,7 +119,7 @@ void WideIO::init_prereq()
             case int(State::ActPowerDown): return Command::PD;
             case int(State::PrePowerDown): return Command::PD;
             case int(State::SelfRefresh): return Command::SREFX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -129,7 +129,7 @@ void WideIO::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SREF;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -144,7 +144,7 @@ void WideIO::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -158,7 +158,7 @@ void WideIO::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR

@@ -1,8 +1,8 @@
 #ifndef __STATTYPE_H
 #define __STATTYPE_H
 
-#include <limits>
 #include <fstream>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -32,44 +32,42 @@ typedef std::vector<Result> VResult;
 typedef std::numeric_limits<Counter> CounterLimits;
 
 class StatBase;
-extern std::vector<StatBase*> all_stats;
+extern std::vector<StatBase *> all_stats;
 void reset_stats();
 
 // Flags
-const uint16_t init      = 0x00000001;
-const uint16_t display   = 0x00000002;
-const uint16_t total     = 0x00000010;
-const uint16_t pdf       = 0x00000020;
-const uint16_t cdf       = 0x00000040;
-const uint16_t dist      = 0x00000080;
-const uint16_t nozero    = 0x00000100;
-const uint16_t nonan     = 0x00000200;
+const uint16_t init = 0x00000001;
+const uint16_t display = 0x00000002;
+const uint16_t total = 0x00000010;
+const uint16_t pdf = 0x00000020;
+const uint16_t cdf = 0x00000040;
+const uint16_t dist = 0x00000080;
+const uint16_t nozero = 0x00000100;
+const uint16_t nonan = 0x00000200;
 
 class Flags {
- protected:
+protected:
   uint16_t flags;
- public:
-  Flags(){}
-  Flags(uint16_t flags):flags(flags){}
-  void operator=(uint16_t _flags){flags = _flags;}
-  bool is_total() const {return flags & total;}
-  bool is_pdf() const {return flags & pdf;}
-  bool is_nozero() const {return flags & nozero;}
-  bool is_nonan() const {return flags & nonan;}
-  bool is_cdf() const {return flags & cdf;}
-  bool is_display() const {return flags & display;}
+
+public:
+  Flags() {}
+  Flags(uint16_t flags) : flags(flags) {}
+  void operator=(uint16_t _flags) { flags = _flags; }
+  bool is_total() const { return flags & total; }
+  bool is_pdf() const { return flags & pdf; }
+  bool is_nozero() const { return flags & nozero; }
+  bool is_nonan() const { return flags & nonan; }
+  bool is_cdf() const { return flags & cdf; }
+  bool is_display() const { return flags & display; }
 };
 
 class StatBase {
- public:
-    StatBase() {
-        all_stats.push_back(this);
-    }
-
+public:
+  StatBase() { all_stats.push_back(this); }
 
   // TODO implement print for Distribution, Histogram,
   // AverageDeviation, StandardDeviation
-  virtual void print(std::ofstream& file) = 0;
+  virtual void print(std::ofstream &file) = 0;
 
   virtual size_type size() const = 0;
   virtual bool zero() const = 0;
@@ -79,18 +77,17 @@ class StatBase {
   virtual VResult vresult() const { return VResult(); };
   virtual Result total() const { return Result(); };
 
-  virtual bool is_display() const  = 0;
+  virtual bool is_display() const = 0;
   virtual bool is_nozero() const = 0;
 };
 
 class StatList {
- protected:
-  std::vector<StatBase*> list;
+protected:
+  std::vector<StatBase *> list;
   std::ofstream stat_output;
- public:
-  void add(StatBase* stat) {
-    list.push_back(stat);
-  }
+
+public:
+  void add(StatBase *stat) { list.push_back(stat); }
   void output(std::string filename) {
     stat_output.open(filename.c_str(), std::ios_base::out);
     if (!stat_output.good()) {
@@ -98,7 +95,7 @@ class StatList {
     }
   }
   void printall() {
-    for(off_type i = 0 ; i < list.size() ; ++i) {
+    for (off_type i = 0; i < list.size(); ++i) {
       if (!list[i]) {
         continue;
       }
@@ -111,27 +108,23 @@ class StatList {
       }
     }
   }
-  ~StatList() {
-    stat_output.close();
-  }
+  ~StatList() { stat_output.close(); }
 };
 
 extern StatList statlist;
 
-template<class Derived>
-class Stat : public StatBase {
- protected:
+template <class Derived> class Stat : public StatBase {
+protected:
   std::string _name;
   std::string _desc;
   int _precision = 1;
   Flags _flags = display;
   std::string separatorString;
- public:
-  Stat() {
-    statlist.add(selfptr());
-  }
-  Derived &self() {return *static_cast<Derived*>(this);}
-  Derived *selfptr() {return static_cast<Derived*>(this);}
+
+public:
+  Stat() { statlist.add(selfptr()); }
+  Derived &self() { return *static_cast<Derived *>(this); }
+  Derived *selfptr() { return static_cast<Derived *>(this); }
   Derived &name(const std::string &__name) {
     _name = __name;
     return self();
@@ -149,8 +142,7 @@ class Stat : public StatBase {
     return self();
   };
 
-  template <class GenericStat>
-  Derived &prereq(const GenericStat & prereq) {
+  template <class GenericStat> Derived &prereq(const GenericStat &prereq) {
     // TODO deal with prereq;
     // only print the stat if the prereq is not zero.
     return self();
@@ -160,41 +152,36 @@ class Stat : public StatBase {
     separatorString = str;
     return self();
   }
-  const std::string& setSeparator() const {return separatorString;}
+  const std::string &setSeparator() const { return separatorString; }
 
   size_type size() const { return 0; }
 
-  virtual void print(std::ofstream& ) {};
-  virtual void printname(std::ofstream& file) {
+  virtual void print(std::ofstream &){};
+  virtual void printname(std::ofstream &file) {
     file.width(40);
     file << _name;
   }
 
-  virtual void printdesc(std::ofstream& file) {
+  virtual void printdesc(std::ofstream &file) {
     file.width(40);
     file << "# " << _desc << std::endl;
   }
 
-  virtual bool is_display() const {
-    return _flags.is_display();
-  }
+  virtual bool is_display() const { return _flags.is_display(); }
 
-  virtual bool is_nozero() const {
-    return _flags.is_nozero();
-  }
+  virtual bool is_nozero() const { return _flags.is_nozero(); }
 };
 
-template <class ScalarType>
-class ScalarBase: public Stat<ScalarType> {
- public:
+template <class ScalarType> class ScalarBase : public Stat<ScalarType> {
+public:
   virtual Counter value() const = 0;
   virtual Result result() const = 0;
   virtual Result total() const = 0;
 
-  size_type size() const {return 1;}
-  VResult vresult() const {return VResult(1, result());}
+  size_type size() const { return 1; }
+  VResult vresult() const { return VResult(1, result()); }
 
-  virtual void print(std::ofstream& file) {
+  virtual void print(std::ofstream &file) {
     Stat<ScalarType>::printname(file);
     // TODO deal with flag
     file.precision(Stat<ScalarType>::_precision);
@@ -205,101 +192,88 @@ class ScalarBase: public Stat<ScalarType> {
   }
 };
 
-class ConstValue: public ScalarBase<ConstValue> {
- private:
+class ConstValue : public ScalarBase<ConstValue> {
+private:
   Counter _value;
- public:
-  ConstValue(Counter __value):_value(__value){}
 
-  void operator ++ () { ++_value; }
-  void operator -- () { --_value; }
-  void operator ++ (int) { _value++; }
-  void operator -- (int) { _value--; }
+public:
+  ConstValue(Counter __value) : _value(__value) {}
 
-  template <typename U>
-  void operator = (const U &v) { _value = v; }
+  void operator++() { ++_value; }
+  void operator--() { --_value; }
+  void operator++(int) { _value++; }
+  void operator--(int) { _value--; }
 
-  template <typename U>
-  void operator += (const U &v) { _value += v;}
+  template <typename U> void operator=(const U &v) { _value = v; }
 
-  template <typename U>
-  void operator -= (const U &v) { _value -= v;}
+  template <typename U> void operator+=(const U &v) { _value += v; }
 
+  template <typename U> void operator-=(const U &v) { _value -= v; }
 
-  Counter value() const {return _value;}
-  Result result() const {return (Result)_value;}
-  Result total() const {return result();}
-  bool zero() const {return (fabs(_value) < eps);}
+  Counter value() const { return _value; }
+  Result result() const { return (Result)_value; }
+  Result total() const { return result(); }
+  bool zero() const { return (fabs(_value) < eps); }
   void prepare() {}
   void reset() {}
 };
 
-class Scalar: public ScalarBase<Scalar> {
- private:
+class Scalar : public ScalarBase<Scalar> {
+private:
   Counter _value;
- public:
-  Scalar():_value(0) {}
-  Counter value() const {return _value;}
-  Result result() const {return (Result)_value;}
-  Result total() const {return (Result)_value;}
 
-  void operator ++ () { ++_value; }
-  void operator -- () { --_value; }
-  void operator ++ (int) { _value++; }
-  void operator -- (int) { _value--; }
+public:
+  Scalar() : _value(0) {}
+  virtual ~Scalar() = default;
+  Counter value() const { return _value; }
+  Result result() const { return (Result)_value; }
+  Result total() const { return (Result)_value; }
 
-  template <typename U>
-  void operator = (const U &v) { _value = v; }
+  void operator++() { ++_value; }
+  void operator--() { --_value; }
+  void operator++(int) { _value++; }
+  void operator--(int) { _value--; }
 
-  template <typename U>
-  void operator += (const U &v) { _value += v;}
+  template <typename U> void operator=(const U &v) { _value = v; }
 
-  template <typename U>
-  void operator -= (const U &v) { _value -= v;}
+  template <typename U> void operator+=(const U &v) { _value += v; }
 
+  template <typename U> void operator-=(const U &v) { _value -= v; }
 
-  virtual bool zero() const {return (fabs(_value) < eps);}
+  virtual bool zero() const { return (fabs(_value) < eps); }
   void prepare() {}
-  void reset() {_value = Counter();}
-
+  void reset() { _value = Counter(); }
 };
 
 extern Tick curTick;
 
-class Average: public ScalarBase<Average> {
- private:
+class Average : public ScalarBase<Average> {
+private:
   Counter current;
   Tick lastReset;
   Result total_val;
   Tick last;
- public:
-  Average():current(0), lastReset(0), total_val(0), last(0){}
+
+public:
+  Average() : current(0), lastReset(0), total_val(0), last(0) {}
 
   void set(Counter val) {
     total_val += current * (curTick - last);
     last = curTick;
     current = val;
   }
-  void inc(Counter val) {
-    set(current + val);
-  }
-  void dec(Counter val) {
-    set(current - val);
-  }
-  void operator ++ () { inc(1); }
-  void operator -- () { dec(1); }
-  void operator ++ (int) { inc(1); }
-  void operator -- (int) { dec(1); }
+  void inc(Counter val) { set(current + val); }
+  void dec(Counter val) { set(current - val); }
+  void operator++() { inc(1); }
+  void operator--() { dec(1); }
+  void operator++(int) { inc(1); }
+  void operator--(int) { dec(1); }
 
-  template <typename U>
-  void operator = (const U &v) { set(v); }
+  template <typename U> void operator=(const U &v) { set(v); }
 
-  template <typename U>
-  void operator += (const U &v) { inc(v);}
+  template <typename U> void operator+=(const U &v) { inc(v); }
 
-  template <typename U>
-  void operator -= (const U &v) { dec(v);}
-
+  template <typename U> void operator-=(const U &v) { dec(v); }
 
   bool zero() const { return (fabs(total_val) < eps); }
   void prepare() {
@@ -315,45 +289,44 @@ class Average: public ScalarBase<Average> {
   Counter value() const { return current; }
   Result result() const {
     assert(last == curTick);
-    return (Result)(total_val + current)/ (Result)(curTick - lastReset + 1);
+    return (Result)(total_val + current) / (Result)(curTick - lastReset + 1);
   }
-  Result total() const {return result();}
+  Result total() const { return result(); }
 };
 
-template<class Derived, class Element>
-class VectorBase: public Stat<Derived> {
- private:
+template <class Derived, class Element>
+class VectorBase : public Stat<Derived> {
+private:
   size_type _size = 0;
   std::vector<Element> data;
 
- public:
+public:
   void init(size_type __size) {
     _size = __size;
     data.resize(size());
-    for (off_type i = 0 ; i < size() ; ++i) {
-      data[i].flags(0)
-             .name("[" + std::string(1, char(i + '0')) + "]");
+    for (off_type i = 0; i < size(); ++i) {
+      data[i].flags(0).name("[" + std::string(1, char(i + '0')) + "]");
     }
   }
-  size_type size() const {return _size;}
+  size_type size() const { return _size; }
   // Copy the values to a local vector and return a reference to it.
-  void value(VCounter& vec) const {
+  void value(VCounter &vec) const {
     vec.resize(size());
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       vec[i] = data[i].value();
     }
   }
   // Copy the results to a local vector and return a reference to it.
-  void result(VResult& vec) const {
+  void result(VResult &vec) const {
     vec.resize(size());
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       vec[i] = data[i].result();
     }
   }
 
   Result total() const {
     Result sum = 0.0;
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       sum += data[i].result();
     }
     return sum;
@@ -361,7 +334,7 @@ class VectorBase: public Stat<Derived> {
 
   VResult vresult() const {
     VResult vres;
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       vres[i] = data[i].result();
     }
     return vres;
@@ -378,40 +351,36 @@ class VectorBase: public Stat<Derived> {
     return data[index];
   }
 
-  bool zero() const {
-    return (fabs(total()) < eps);
-  }
+  bool zero() const { return (fabs(total()) < eps); }
 
   void prepare() {
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       data[i].prepare();
     }
   }
   void reset() {
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       data[i].reset();
     }
   }
-  void print(std::ofstream& file) {
+  void print(std::ofstream &file) {
     Stat<Derived>::printname(file);
     file.precision(Stat<Derived>::_precision);
     file.width(20);
     file << std::fixed << total();
     Stat<Derived>::printdesc(file);
-    for (off_type i = 0 ; i < size() ; ++i) {
+    for (off_type i = 0; i < size(); ++i) {
       data[i].print(file);
     }
   }
 };
 
-class Vector: public VectorBase<Vector, Scalar> {
-};
+class Vector : public VectorBase<Vector, Scalar> {};
 
-class AverageVector: public VectorBase<AverageVector, Average> {
-};
+class AverageVector : public VectorBase<AverageVector, Average> {};
 
-class Distribution: public Stat<Distribution> {
- private:
+class Distribution : public Stat<Distribution> {
+private:
   // Parameter part:
   Counter param_min;
   Counter param_max;
@@ -440,9 +409,12 @@ class Distribution: public Stat<Distribution> {
   // Counter for each bucket
   VCounter cvec;
 
- public:
-  Distribution():param_min(Counter()), param_max(Counter()),
-      param_bucket_size(Counter()) { reset(); }
+public:
+  Distribution()
+      : param_min(Counter()), param_max(Counter()),
+        param_bucket_size(Counter()) {
+    reset();
+  }
   void init(Counter min, Counter max, Counter bkt) {
     param_min = min;
     param_max = max;
@@ -458,8 +430,7 @@ class Distribution: public Stat<Distribution> {
     else if (val > max_track)
       overflow += number;
     else {
-      size_type index =
-          (size_type)std::floor((val - min_track) / bucket_size);
+      size_type index = (size_type)std::floor((val - min_track) / bucket_size);
       assert(index < size());
       cvec[index] += number;
     }
@@ -475,11 +446,9 @@ class Distribution: public Stat<Distribution> {
     samples += number;
   }
 
-  size_type size() const {return cvec.size();}
-  bool zero() const {
-    return (fabs(samples) < eps);
-  }
-  void prepare() {};
+  size_type size() const { return cvec.size(); }
+  bool zero() const { return (fabs(samples) < eps); }
+  void prepare(){};
   void reset() {
     min_track = param_min;
     max_track = param_max;
@@ -491,7 +460,7 @@ class Distribution: public Stat<Distribution> {
     overflow = Counter();
 
     size_type _size = cvec.size();
-    for (off_type i = 0 ; i < _size ; ++i) {
+    for (off_type i = 0; i < _size; ++i) {
       cvec[i] = Counter();
     }
 
@@ -520,14 +489,14 @@ class Distribution: public Stat<Distribution> {
       max_val = d.max_val;
     }
 
-    for (off_type i = 0 ; i < d_size ; ++i) {
+    for (off_type i = 0; i < d_size; ++i) {
       cvec[i] += d.cvec[i];
     }
   }
 };
 
-class Histogram: public Stat<Histogram> {
- private:
+class Histogram : public Stat<Histogram> {
+private:
   size_type param_buckets;
 
   Counter min_bucket;
@@ -540,11 +509,9 @@ class Histogram: public Stat<Histogram> {
   Counter samples;
   VCounter cvec;
 
- public:
-  Histogram():param_buckets(0) { reset(); }
-  Histogram(size_type __buckets):cvec(__buckets) {
-    init(__buckets);
-  }
+public:
+  Histogram() : param_buckets(0) { reset(); }
+  Histogram(size_type __buckets) : cvec(__buckets) { init(__buckets); }
   void init(size_type __buckets) {
     cvec.resize(__buckets);
     param_buckets = __buckets;
@@ -554,12 +521,10 @@ class Histogram: public Stat<Histogram> {
   void grow_up();
   void grow_out();
   void grow_convert();
-  void add(Histogram& hs);
+  void add(Histogram &hs);
   void sample(Counter val, int number);
 
-  bool zero() const {
-    return (fabs(samples) < eps);
-  }
+  bool zero() const { return (fabs(samples) < eps); }
   void prepare() {}
   void reset() {
     min_bucket = 0;
@@ -567,7 +532,7 @@ class Histogram: public Stat<Histogram> {
     bucket_size = 1;
 
     size_type size = param_buckets;
-    for (off_type i = 0 ; i < size ; ++i) {
+    for (off_type i = 0; i < size; ++i) {
       cvec[i] = Counter();
     }
 
@@ -577,78 +542,80 @@ class Histogram: public Stat<Histogram> {
     logs = Counter();
   }
 
-  size_type size() const {return param_buckets;}
+  size_type size() const { return param_buckets; }
 };
 
-class StandardDeviation: public Stat<StandardDeviation> {
- private:
+class StandardDeviation : public Stat<StandardDeviation> {
+private:
   Counter sum;
   Counter squares;
   Counter samples;
 
- public:
-  StandardDeviation():sum(Counter()), squares(Counter()),
-      samples(Counter()) {}
+public:
+  StandardDeviation()
+      : sum(Counter()), squares(Counter()), samples(Counter()) {}
   void sample(Counter val, int number) {
     Counter value = val * number;
     sum += value;
     squares += value * value;
     samples += number;
   }
-  size_type size() const {return 1;}
-  bool zero() const {return (fabs(samples) < eps);}
+  size_type size() const { return 1; }
+  bool zero() const { return (fabs(samples) < eps); }
   void prepare() {}
   void reset() {
     sum = Counter();
     squares = Counter();
     samples = Counter();
   }
-  void add(StandardDeviation& sd) {
+  void add(StandardDeviation &sd) {
     sum += sd.sum;
     squares += sd.squares;
     samples += sd.samples;
   }
 };
 
-class AverageDeviation: public Stat<AverageDeviation> {
- private:
+class AverageDeviation : public Stat<AverageDeviation> {
+private:
   Counter sum;
   Counter squares;
 
- public:
-  AverageDeviation():sum(Counter()), squares(Counter()) {}
+public:
+  AverageDeviation() : sum(Counter()), squares(Counter()) {}
   void sample(Counter val, int number) {
     Counter value = val * number;
     sum += value;
     squares += value * value;
   }
-  size_type size() const {return 1;}
-  bool zero() const {return (fabs(sum) < eps);}
+  size_type size() const { return 1; }
+  bool zero() const { return (fabs(sum) < eps); }
   void prepare() {}
   void reset() {
     sum = Counter();
     squares = Counter();
   }
-  void add(AverageDeviation& ad) {
+  void add(AverageDeviation &ad) {
     sum += ad.sum;
     squares += ad.squares;
   }
 };
 
 class Op {
- private:
+private:
   std::string opstring;
- public:
+
+public:
   Op() {}
-  Op(std::string __opstring):opstring(__opstring){}
-  Result operator() (Result r) const {
+  Op(std::string __opstring) : opstring(__opstring) {}
+  Result operator()(Result r) const {
     if (opstring == "-") {
       return -r;
     } else {
+      throw "error";
       assert("Unary operation can only be unary negation." && false);
     }
   }
-  Result operator() (Result l, Result r) const {
+  Result operator()(Result l, Result r) const {
     if (opstring == "+") {
       return l + r;
     } else if (opstring == "-") {
@@ -659,6 +626,7 @@ class Op {
       assert(fabs(r) > 1e-8 || "divide zero error");
       return l / r;
     } else {
+      throw false;
       assert("invalid binary opstring " && false);
     }
   }

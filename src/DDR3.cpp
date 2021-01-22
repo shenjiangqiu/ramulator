@@ -65,7 +65,7 @@ void DDR3::init_speed()
         case 1600: speed_entry.nRRD = (page==1) ? 5 : 6; speed_entry.nFAW = (page==1) ? 24 : 32; break;
         case 1866: speed_entry.nRRD = (page==1) ? 5 : 6; speed_entry.nFAW = (page==1) ? 26 : 33; break;
         case 2133: speed_entry.nRRD = (page==1) ? 5 : 6; speed_entry.nFAW = (page==1) ? 27 : 34; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
 
     // nRFC, nXS
@@ -77,7 +77,7 @@ void DDR3::init_speed()
         case 1600: speed_entry.nRFC = (chip==512) ? 72  : (chip==1<<10) ? 88  : (chip==1<<11) ? 128 : (chip==1<<12) ? 208 : 280; break;
         case 1866: speed_entry.nRFC = (chip==512) ? 84  : (chip==1<<10) ? 103 : (chip==1<<11) ? 150 : (chip==1<<12) ? 243 : 327; break;
         case 2133: speed_entry.nRFC = (chip==512) ? 96  : (chip==1<<10) ? 118 : (chip==1<<11) ? 171 : (chip==1<<12) ? 278 : 374; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
     switch (speed_entry.rate) {
         case 800:  speed_entry.nXS  = (chip==512) ? 40  : (chip==1<<10) ? 48  : (chip==1<<11) ? 68  : (chip==1<<12) ? 108 : 144; break;
@@ -86,7 +86,7 @@ void DDR3::init_speed()
         case 1600: speed_entry.nXS  = (chip==512) ? 80  : (chip==1<<10) ? 96  : (chip==1<<11) ? 136 : (chip==1<<12) ? 216 : 288; break;
         case 1866: speed_entry.nXS  = (chip==512) ? 94  : (chip==1<<10) ? 112 : (chip==1<<11) ? 159 : (chip==1<<12) ? 252 : 336; break;
         case 2133: speed_entry.nXS  = (chip==512) ? 107 : (chip==1<<10) ? 128 : (chip==1<<11) ? 182 : (chip==1<<12) ? 288 : 384; break;
-        default: assert(false);
+        default: throw false;assert(false);
     }
 }
 
@@ -100,7 +100,7 @@ void DDR3::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<DDR3>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -109,7 +109,7 @@ void DDR3::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -132,7 +132,7 @@ void DDR3::init_prereq()
             case int(State::ActPowerDown): return Command::PDE;
             case int(State::PrePowerDown): return Command::PDE;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -142,7 +142,7 @@ void DDR3::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -158,7 +158,7 @@ void DDR3::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -172,7 +172,7 @@ void DDR3::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR

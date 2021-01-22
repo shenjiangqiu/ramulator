@@ -98,7 +98,7 @@ void GDDR5::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
     prereq[int(Level::Bank)][int(Command::RD)] = [] (DRAM<GDDR5>* node, Command cmd, int id) {
         switch (int(node->state)) {
@@ -107,7 +107,7 @@ void GDDR5::init_prereq()
                 if (node->row_state.find(id) != node->row_state.end())
                     return cmd;
                 return Command::PRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -131,7 +131,7 @@ void GDDR5::init_prereq()
             case int(State::ActPowerDown): return Command::PDE;
             case int(State::PrePowerDown): return Command::PDE;
             case int(State::SelfRefresh): return Command::SRX;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // SR
@@ -141,7 +141,7 @@ void GDDR5::init_prereq()
             case int(State::ActPowerDown): return Command::PDX;
             case int(State::PrePowerDown): return Command::PDX;
             case int(State::SelfRefresh): return Command::SRE;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 }
 
@@ -156,7 +156,7 @@ void GDDR5::init_rowhit()
                 if (node->row_state.find(id) != node->row_state.end())
                     return true;
                 return false;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
@@ -170,7 +170,7 @@ void GDDR5::init_rowopen()
         switch (int(node->state)) {
             case int(State::Closed): return false;
             case int(State::Opened): return true;
-            default: assert(false);
+            default: throw false;assert(false);
         }};
 
     // WR
