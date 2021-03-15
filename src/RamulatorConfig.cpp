@@ -58,7 +58,20 @@ void Config::parse(const string& fname)
           expected_limit_insts = atoi(tokens[1].c_str());
         } else if (tokens[0] == "warmup_insts") {
           warmup_insts = atoi(tokens[1].c_str());
+        }else if (tokens[0] == "addr_mapping") { //Yue
+            //std::cout<<" addr_mapping string "<<tokens[1];
+            if (tokens[1] == "ChRaBaRoCo")
+              addr_mapping = 0;
+            else if (tokens[1] == "RoBaRaCoCh")
+              addr_mapping = 1;
+            else if (tokens[1] == "CoRoBaRaCh")
+              addr_mapping = 2;
+            else if (tokens[1] == "RoCoBaRaCh")
+              addr_mapping = 3;  
+            
+            //std::cout<<"  "<<addr_mapping <<std::endl;
         }
+        
     }
     file.close();
 }

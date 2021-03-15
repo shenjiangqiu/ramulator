@@ -23,6 +23,7 @@ private:
     int core_num = 1;
     long expected_limit_insts = 0;
     long warmup_insts = 0;
+    int addr_mapping = 0;
 
 public:
     Config() {}
@@ -62,6 +63,7 @@ public:
     int get_core_num() const {return core_num;}
     long get_expected_limit_insts() const {return expected_limit_insts;}
     long get_warmup_insts() const {return warmup_insts;}
+    int get_addr_mapping() const {return addr_mapping;}
 
     bool has_l3_cache() const {
       if (options.find("cache") != options.end()) {
@@ -112,6 +114,7 @@ public:
       }
       return false;
     }
+
 };
 
 

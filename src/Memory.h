@@ -75,6 +75,8 @@ public:
   enum class Type {
     ChRaBaRoCo,
     RoBaRaCoCh,
+    CoRoBaRaCh,
+    RoCoBaRaCh,
     MAX,
   } type = Type::RoBaRaCoCh;
 
@@ -125,6 +127,32 @@ public:
         use_mapping_file = true;
       }
     }
+
+  
+    int type_in = configs.get_addr_mapping();
+    std::cout<<"addr_mapping is "<<type_in;
+    switch( type_in){
+      case 0:
+          type = Type::ChRaBaRoCo;
+          break;
+
+      case 1:
+         type = Type::RoBaRaCoCh;
+         break;
+
+      case 2:
+         type = Type::CoRoBaRaCh;
+         break;
+
+      case 3:
+         type = Type::RoCoBaRaCh;
+         break;
+
+      default:
+         ;
+    }
+    std:cout<<"  type "<<(int)type<<"\n";
+
     // If hi address bits will not be assigned to Rows
     // then the chips must not be LPDDRx 6Gb, 12Gb etc.
     if (type != Type::RoBaRaCoCh && spec->standard_name.substr(0, 5) == "LPDDR")
@@ -285,6 +313,44 @@ public:
         for (int i = 1; i <= int(T::Level::Row); i++)
           req.addr_vec[i] = slice_lower_bits(addr, addr_bits[i]);
         break;
+      case int(Type::CoRoBaRaCh):
+        // channel              
+        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        // rank
+        req.addr_vec[(int)T::Level::Rank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
+        // bank
+        req.addr_vec[(int)T::Level::Bank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
+        // Row
+        req.addr_vec[(int)T::Level::Row] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
+        // Col
+        req.addr_vec[(int)T::Level::Column] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
+        break;
+      
+case int(Type::RoCoBaRaCh):
+        // channel              
+        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        // rank
+        req.addr_vec[(int)T::Level::Rank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
+        // bank
+        req.addr_vec[(int)T::Level::Bank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
+        
+        // Col
+        req.addr_vec[(int)T::Level::Column] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
+
+        // Row
+        req.addr_vec[(int)T::Level::Row] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
+        
+        break;
+      
+
       default:
         throw false;assert(false);
       }
