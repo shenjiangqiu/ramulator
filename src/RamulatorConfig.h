@@ -24,6 +24,7 @@ private:
     long expected_limit_insts = 0;
     long warmup_insts = 0;
     int addr_mapping = 0;
+    int tCK = 1;
 
 public:
     Config() {}

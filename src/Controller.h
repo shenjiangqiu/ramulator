@@ -68,6 +68,8 @@ protected:
 public:
     /* Member Variables */
     long clk = 0;
+    long active_clk = 0;
+    
     DRAM<T>* channel;
 
     Scheduler<T>* scheduler;  // determines the highest priority request whose commands will be issued
@@ -296,6 +298,13 @@ public:
       req_queue_length_avg = req_queue_length_sum.value() / dram_cycles;
       read_req_queue_length_avg = read_req_queue_length_sum.value() / dram_cycles;
       write_req_queue_length_avg = write_req_queue_length_sum.value() / dram_cycles;
+      
+      double bw = (read_transaction_bytes.value()+write_transaction_bytes.value())/(active_clk);
+      std::cout<<" channel "<<channel->id<<" MLP  "<< req_queue_length_sum.value()/active_clk;
+      std::cout<<" bw "<<bw;
+      std::cout<<" A-rate "<<(double)active_clk/clk<< " A-rate1 "<<(double)channel->active_cycles.value()/clk;
+      std::cout<<" readBytes "<<read_transaction_bytes.value()<<" writeBytes "<<write_transaction_bytes.value()<<"\n";
+      
       // call finish function of each channel
       channel->finish(dram_cycles);
     }
@@ -332,10 +341,14 @@ public:
     void tick()
     {
         clk++;
+        int queue_len = readq.size() + writeq.size() + pending.size();
         req_queue_length_sum += readq.size() + writeq.size() + pending.size();
         read_req_queue_length_sum += readq.size() + pending.size();
         write_req_queue_length_sum += writeq.size();
-
+  
+        if( queue_len )
+             active_clk++;
+             
         /*** 1. Serve completed reads ***/
         if (pending.size()) {
             Request& req = pending[0];
