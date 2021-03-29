@@ -1,5 +1,5 @@
-#ifndef __CONTROLLER_H
-#define __CONTROLLER_H
+#ifndef RAMU__CONTROLLER_H
+#define RAMU__CONTROLLER_H
 
 #include <cassert>
 #include <cstdio>
@@ -491,15 +491,18 @@ public:
         //if (cmd != channel->spec->translate[int(req->type)]){
         if (cmd != channel->spec->translate[int(req->type)]) {
             if(channel->spec->is_opening(cmd)) {
-                // promote the request that caused issuing activation to actq
-                actq.q.push_back(*req);
-                queue->q.erase(req);
+                
                 if( queue != &otherq){
-                    int bank =  req->addr_vec[int(T::Level::Bank)];
+                    int bank =  req->addr_vec[int(T::Level::Bank)];//invalid read
                     inflight_bank_req[bank]--;
                     if(inflight_bank_req[bank] == 0 )
                        blp--;
                 }
+                
+                // promote the request that caused issuing activation to actq
+                actq.q.push_back(*req);
+                queue->q.erase(req);
+                
             }
 
             return;
