@@ -153,7 +153,7 @@ public:
       default:
          ;
     }
-    std:cout<<"  type "<<(int)type<<"\n";
+    
 
     // If hi address bits will not be assigned to Rows
     // then the chips must not be LPDDRx 6Gb, 12Gb etc.

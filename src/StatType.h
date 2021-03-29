@@ -142,7 +142,7 @@ public:
     return self();
   };
 
-  template <class GenericStat> Derived &prereq(const GenericStat &prereq) {
+  template <class GenericStat> Derived &prereq(const GenericStat &) {
     // TODO deal with prereq;
     // only print the stat if the prereq is not zero.
     return self();

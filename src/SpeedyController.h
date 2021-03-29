@@ -97,7 +97,7 @@ public:
 
   /* Member Functions */
 
-  void finish(int read_req, int write_req, int dram_cycles) {
+  void finish(int , int , int dram_cycles) {
     // call finish function of each channel
     channel->finish(dram_cycles);
   }

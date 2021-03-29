@@ -248,7 +248,7 @@ private:
             return vector<int>();},
 
         // Opened
-        [] (typename T::Command cmd) {
+        [] (typename T::Command ) {
             return vector<int>();},
 
         // Timeout

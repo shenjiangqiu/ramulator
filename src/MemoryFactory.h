@@ -50,8 +50,10 @@ public:
         return new Memory<T>(configs, ctrls);
     }
 
-    static void validate(int channels, int ranks, const Config& configs) {
-        assert(channels > 0 && ranks > 0);
+    static void validate(int channels, int ranks, const Config& ) {
+        if(!(channels > 0 && ranks > 0)){
+          throw;
+        }
     }
 
     static MemoryBase *create(const Config& configs, int cacheline)
