@@ -79,7 +79,7 @@ public:
 
     struct Queue {
         list<Request> q;
-        unsigned int max = 32;
+        unsigned int max = 512;  //32;
         unsigned int size() {return q.size();}
     };
 
@@ -104,6 +104,10 @@ public:
     bool record_cmd_trace = false;
     /* Commands to stdout */
     bool print_cmd_trace = false;
+    
+    uint64_t sum_blp, blp_clk;
+    int blp;
+    int inflight_bank_req[32];
 
     /* Constructor */
     Controller(const Config& configs, DRAM<T>* channel) :
@@ -125,7 +129,7 @@ public:
             for (unsigned int i = 0; i < channel->children.size(); i++)
                 cmd_trace_files[i].open(prefix + to_string(i) + suffix);
         }
-
+       
         // regStats
 
         row_hits
@@ -280,6 +284,13 @@ public:
             .desc("record write conflict for this core when it reaches request limit or to the end")
             ;
 #endif
+    
+    
+        blp = 0;
+        sum_blp = 0;
+        blp_clk = 0;
+        for(int i = 0; i <32; i++)
+          inflight_bank_req[i] = 0;
     }
 
     ~Controller(){
@@ -300,8 +311,9 @@ public:
       write_req_queue_length_avg = write_req_queue_length_sum.value() / dram_cycles;
       
       double bw = (read_transaction_bytes.value()+write_transaction_bytes.value())/(active_clk);
-      std::cout<<" channel "<<channel->id<<" MLP  "<< req_queue_length_sum.value()/active_clk;
-      std::cout<<" bw "<<bw;
+      std::cout<<" channel "<<channel->id<<" MLP  "<< (double)req_queue_length_sum.value()/active_clk;
+      std::cout<<"  BLP "<<(double)sum_blp/blp_clk<<"  bw "<<bw;
+      //std::cout<< "  active_clk "<<active_clk<<"  blp_clk "<<blp_clk;
       std::cout<<" A-rate "<<(double)active_clk/clk<< " A-rate1 "<<(double)channel->active_cycles.value()/clk;
       std::cout<<" readBytes "<<read_transaction_bytes.value()<<" writeBytes "<<write_transaction_bytes.value()<<"\n";
       
@@ -324,6 +336,12 @@ public:
         Queue& queue = get_queue(req.type);
         if (queue.max == queue.size())
             return false;
+        
+        int bank = req.addr_vec[int(T::Level::Bank)];
+        assert( bank >= 0 && bank <16);
+        inflight_bank_req[bank]++;
+        if( inflight_bank_req[bank] == 1)
+          blp++; 
 
         req.arrive = clk;
         queue.q.push_back(req);
@@ -345,21 +363,34 @@ public:
         req_queue_length_sum += readq.size() + writeq.size() + pending.size();
         read_req_queue_length_sum += readq.size() + pending.size();
         write_req_queue_length_sum += writeq.size();
-  
+        
+        if( blp ){
+          sum_blp += blp;
+          blp_clk++;
+        }
+
         if( queue_len )
              active_clk++;
              
         /*** 1. Serve completed reads ***/
         if (pending.size()) {
             Request& req = pending[0];
+
             if (req.depart <= clk) {
                 if (req.depart - req.arrive > 1) { // this request really accessed a row
                   read_latency_sum += req.depart - req.arrive;
                   channel->update_serving_requests(
                       req.addr_vec.data(), -1, clk);
                 }
+                
+                int bank =  req.addr_vec[int(T::Level::Bank)];
+                inflight_bank_req[bank]--;
+                if(inflight_bank_req[bank] == 0 )
+                   blp--;
+
                 req.callback(req);
                 pending.pop_front();
+
             }
         }
 
@@ -463,6 +494,12 @@ public:
                 // promote the request that caused issuing activation to actq
                 actq.q.push_back(*req);
                 queue->q.erase(req);
+                if( queue != &otherq){
+                    int bank =  req->addr_vec[int(T::Level::Bank)];
+                    inflight_bank_req[bank]--;
+                    if(inflight_bank_req[bank] == 0 )
+                       blp--;
+                }
             }
 
             return;
@@ -476,7 +513,20 @@ public:
 
         if (req->type == Request::Type::WRITE) {
             channel->update_serving_requests(req->addr_vec.data(), -1, clk);
+            
+            int bank =  req->addr_vec[int(T::Level::Bank)];
+            inflight_bank_req[bank]--;
+            if( inflight_bank_req[bank] == 0 )
+                   blp--;
+
             req->callback(*req);
+        }
+
+        if( queue != &otherq){
+            int bank =  req->addr_vec[int(T::Level::Bank)];
+            inflight_bank_req[bank]--;
+            if( inflight_bank_req[bank] == 0 )
+                blp--;
         }
 
         // remove request from queue

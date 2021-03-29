@@ -34,6 +34,7 @@ public:
   virtual double clk_ns() = 0;
   virtual void tick() = 0;
   virtual bool send(Request req) = 0;
+  virtual int getBankID( ) = 0;
   virtual int pending_requests() = 0;
   virtual void finish(void) = 0;
   virtual long page_allocator(long addr, int coreid) = 0;
@@ -103,6 +104,7 @@ public:
   bool dump_mapping;
 
   int tx_bits;
+  int bank_id;
 
   Memory(const Config &configs, vector<Controller<T> *> ctrls)
       : ctrls(ctrls), spec(ctrls[0]->channel->spec),
@@ -289,6 +291,10 @@ public:
     }
   }
 
+  int getBankID( ){
+    return bank_id;
+  }
+
   bool send(Request req) {
     req.addr_vec.resize(addr_bits.size());
     long addr = req.addr;
@@ -368,6 +374,11 @@ case int(Type::RoCoBaRaCh):
         ++num_write_requests[coreid];
       }
       ++incoming_requests_per_channel[req.addr_vec[int(T::Level::Channel)]];
+      
+
+      bank_id = req.addr_vec[int(T::Level::Channel)]*16;
+      bank_id += req.addr_vec[int(T::Level::Bank)];
+      
       return true;
     }
 
