@@ -347,7 +347,7 @@ public:
   }
 
   Element &operator[](off_type index) {
-    assert(index >= 0 && index < size());
+    assert((int)index >= 0 && index < size());
     return data[index];
   }
 
