@@ -132,7 +132,7 @@ public:
 
   
     int type_in = configs.get_addr_mapping();
-    std::cout<<"addr_mapping is "<<type_in;
+    std::cout<<"addr_mapping is "<<type_in<<std::endl;
     switch( type_in){
       case 0:
           type = Type::ChRaBaRoCo;
