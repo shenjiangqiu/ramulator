@@ -291,7 +291,7 @@ public:
 
   int getBankID() override { return bank_id; }
   unsigned get_channel_num() {
-
+    return 8;
   }
   unsigned get_channel_id(uint64_t taddr) override {
     long addr=(long)taddr;
