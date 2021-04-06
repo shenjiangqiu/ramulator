@@ -29,15 +29,15 @@ namespace ramulator {
 
 class MemoryBase {
 public:
-  MemoryBase() {}
-  virtual ~MemoryBase() {}
+  MemoryBase() = default;
+  virtual ~MemoryBase() = default;
   virtual double clk_ns() = 0;
   virtual void tick() = 0;
   virtual bool send(Request req) = 0;
   virtual int getBankID() = 0;
   virtual unsigned get_channel_id(uint64_t addr)=0;
   virtual int pending_requests() = 0;
-  virtual void finish(void) = 0;
+  virtual void finish() = 0;
   virtual long page_allocator(long addr, int coreid) = 0;
   virtual void record_core(int coreid) = 0;
   virtual void set_high_writeq_watermark(const float watermark) = 0;
@@ -580,7 +580,7 @@ public:
     // printf("\n");
   }
 
-  int pending_requests() {
+  int pending_requests() override {
     int reqs = 0;
     for (auto ctrl : ctrls)
       reqs += ctrl->readq.size() + ctrl->writeq.size() + ctrl->otherq.size() +
@@ -588,17 +588,17 @@ public:
     return reqs;
   }
 
-  void set_high_writeq_watermark(const float watermark) {
+  void set_high_writeq_watermark(const float watermark) override {
     for (auto ctrl : ctrls)
       ctrl->set_high_writeq_watermark(watermark);
   }
 
-  void set_low_writeq_watermark(const float watermark) {
+  void set_low_writeq_watermark(const float watermark) override {
     for (auto ctrl : ctrls)
       ctrl->set_low_writeq_watermark(watermark);
   }
 
-  void finish(void) {
+  void finish(void) override {
     dram_capacity = max_address;
     int *sz = spec->org_entry.count;
     maximum_bandwidth = spec->speed_entry.rate * 1e6 * spec->channel_width *
