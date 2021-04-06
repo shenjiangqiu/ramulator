@@ -34,7 +34,8 @@ public:
   virtual double clk_ns() = 0;
   virtual void tick() = 0;
   virtual bool send(Request req) = 0;
-  virtual int getBankID( ) = 0;
+  virtual int getBankID() = 0;
+  virtual unsigned get_channel_id(uint64_t addr)=0;
   virtual int pending_requests() = 0;
   virtual void finish(void) = 0;
   virtual long page_allocator(long addr, int coreid) = 0;
@@ -104,7 +105,7 @@ public:
   bool dump_mapping;
 
   int tx_bits;
-  int bank_id;
+  int bank_id{};
 
   Memory(const Config &configs, vector<Controller<T> *> ctrls)
       : ctrls(ctrls), spec(ctrls[0]->channel->spec),
@@ -130,30 +131,27 @@ public:
       }
     }
 
-  
     int type_in = configs.get_addr_mapping();
-    std::cout<<"addr_mapping is "<<type_in<<std::endl;
-    switch( type_in){
-      case 0:
-          type = Type::ChRaBaRoCo;
-          break;
+    std::cout << "addr_mapping is " << type_in << std::endl;
+    switch (type_in) {
+    case 0:
+      type = Type::ChRaBaRoCo;
+      break;
 
-      case 1:
-         type = Type::RoBaRaCoCh;
-         break;
+    case 1:
+      type = Type::RoBaRaCoCh;
+      break;
 
-      case 2:
-         type = Type::CoRoBaRaCh;
-         break;
+    case 2:
+      type = Type::CoRoBaRaCh;
+      break;
 
-      case 3:
-         type = Type::RoCoBaRaCh;
-         break;
+    case 3:
+      type = Type::RoCoBaRaCh;
+      break;
 
-      default:
-         ;
+    default:;
     }
-    
 
     // If hi address bits will not be assigned to Rows
     // then the chips must not be LPDDRx 6Gb, 12Gb etc.
@@ -248,15 +246,15 @@ public:
 #endif
   }
 
-  ~Memory() {
+  ~Memory() override {
     for (auto ctrl : ctrls)
       delete ctrl;
     delete spec;
   }
 
-  double clk_ns() { return spec->speed_entry.tCK; }
+  double clk_ns() override { return spec->speed_entry.tCK; }
 
-  void record_core(int coreid) {
+  void record_core(int coreid) override {
 #ifndef INTEGRATED_WITH_GEM5
     record_read_requests[coreid] = num_read_requests[coreid];
     record_write_requests[coreid] = num_write_requests[coreid];
@@ -266,7 +264,7 @@ public:
     }
   }
 
-  void tick() {
+  void tick() override {
     ++num_dram_cycles;
     int cur_que_req_num = 0;
     int cur_que_readreq_num = 0;
@@ -291,11 +289,73 @@ public:
     }
   }
 
-  int getBankID( ){
-    return bank_id;
-  }
+  int getBankID() override { return bank_id; }
+  unsigned get_channel_num() {
 
-  bool send(Request req) {
+  }
+  unsigned get_channel_id(uint64_t taddr) override {
+    long addr=(long)taddr;
+    auto req=Request(addr,Request::Type::READ);
+    if (use_mapping_file) {
+      apply_mapping(addr, req.addr_vec);
+    } else {
+      switch (int(type)) {
+      case int(Type::ChRaBaRoCo):
+        for (int i = addr_bits.size() - 1; i >= 0; i--)
+          req.addr_vec[i] = slice_lower_bits(addr, addr_bits[i]);
+        break;
+      case int(Type::RoBaRaCoCh):
+        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        req.addr_vec[addr_bits.size() - 1] =
+            slice_lower_bits(addr, addr_bits[addr_bits.size() - 1]);
+        for (int i = 1; i <= int(T::Level::Row); i++)
+          req.addr_vec[i] = slice_lower_bits(addr, addr_bits[i]);
+        break;
+      case int(Type::CoRoBaRaCh):
+        // channel
+        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        // rank
+        req.addr_vec[(int)T::Level::Rank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
+        // bank
+        req.addr_vec[(int)T::Level::Bank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
+        // Row
+        req.addr_vec[(int)T::Level::Row] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
+        // Col
+        req.addr_vec[(int)T::Level::Column] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
+        break;
+
+      case int(Type::RoCoBaRaCh):
+        // channel
+        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        // rank
+        req.addr_vec[(int)T::Level::Rank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
+        // bank
+        req.addr_vec[(int)T::Level::Bank] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
+
+        // Col
+        req.addr_vec[(int)T::Level::Column] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
+
+        // Row
+        req.addr_vec[(int)T::Level::Row] =
+            slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
+
+        break;
+
+      default:
+        throw false;
+        assert(false);
+      }
+    }
+    return req.addr_vec[0];
+  }
+  bool send(Request req) override {
     req.addr_vec.resize(addr_bits.size());
     long addr = req.addr;
     int coreid = req.coreid;
@@ -320,7 +380,7 @@ public:
           req.addr_vec[i] = slice_lower_bits(addr, addr_bits[i]);
         break;
       case int(Type::CoRoBaRaCh):
-        // channel              
+        // channel
         req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
         // rank
         req.addr_vec[(int)T::Level::Rank] =
@@ -335,9 +395,9 @@ public:
         req.addr_vec[(int)T::Level::Column] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
         break;
-      
-case int(Type::RoCoBaRaCh):
-        // channel              
+
+      case int(Type::RoCoBaRaCh):
+        // channel
         req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
         // rank
         req.addr_vec[(int)T::Level::Rank] =
@@ -345,7 +405,7 @@ case int(Type::RoCoBaRaCh):
         // bank
         req.addr_vec[(int)T::Level::Bank] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
-        
+
         // Col
         req.addr_vec[(int)T::Level::Column] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
@@ -353,12 +413,12 @@ case int(Type::RoCoBaRaCh):
         // Row
         req.addr_vec[(int)T::Level::Row] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
-        
+
         break;
-      
 
       default:
-        throw false;assert(false);
+        throw false;
+        assert(false);
       }
     }
 
@@ -374,18 +434,17 @@ case int(Type::RoCoBaRaCh):
         ++num_write_requests[coreid];
       }
       ++incoming_requests_per_channel[req.addr_vec[int(T::Level::Channel)]];
-      
 
-      bank_id = req.addr_vec[int(T::Level::Channel)]*16;
+      bank_id = req.addr_vec[int(T::Level::Channel)] * 16;
       bank_id += req.addr_vec[int(T::Level::Bank)];
-      
+
       return true;
     }
 
     return false;
   }
 
-  void init_mapping_with_file(string filename) {
+  void init_mapping_with_file(const string& filename) {
     ifstream file(filename);
     assert(file.good() && "Bad mapping file");
     // possible line types are:
@@ -558,7 +617,7 @@ case int(Type::RoCoBaRaCh):
         in_queue_write_req_num_sum.value() / dram_cycles;
   }
 
-  long page_allocator(long addr, int coreid) {
+  long page_allocator(long addr, int coreid) override {
     long virtual_page_number = addr >> 12;
 
     switch (int(translation)) {
@@ -607,7 +666,8 @@ case int(Type::RoCoBaRaCh):
     }
     default:
       throw false;
-      throw false;assert(false);
+      throw false;
+      assert(false);
     }
   }
 
