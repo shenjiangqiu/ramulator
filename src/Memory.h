@@ -296,55 +296,31 @@ public:
   unsigned get_channel_id(uint64_t taddr) override {
     long addr=(long)taddr;
     auto req=Request(addr,Request::Type::READ);
+    int channel_id=0;
     if (use_mapping_file) {
       apply_mapping(addr, req.addr_vec);
     } else {
       switch (int(type)) {
       case int(Type::ChRaBaRoCo):
-        for (int i = addr_bits.size() - 1; i >= 0; i--)
-          req.addr_vec[i] = slice_lower_bits(addr, addr_bits[i]);
+        for (int i = addr_bits.size() - 1; i >= 1; i--)
+          slice_lower_bits(addr, addr_bits[i]);
+        channel_id=slice_lower_bits(addr, addr_bits[0]);
         break;
       case int(Type::RoBaRaCoCh):
-        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
-        req.addr_vec[addr_bits.size() - 1] =
-            slice_lower_bits(addr, addr_bits[addr_bits.size() - 1]);
-        for (int i = 1; i <= int(T::Level::Row); i++)
-          req.addr_vec[i] = slice_lower_bits(addr, addr_bits[i]);
+        channel_id = slice_lower_bits(addr, addr_bits[0]);
+
         break;
       case int(Type::CoRoBaRaCh):
         // channel
-        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        channel_id = slice_lower_bits(addr, addr_bits[0]);
         // rank
-        req.addr_vec[(int)T::Level::Rank] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
-        // bank
-        req.addr_vec[(int)T::Level::Bank] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
-        // Row
-        req.addr_vec[(int)T::Level::Row] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
-        // Col
-        req.addr_vec[(int)T::Level::Column] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
         break;
 
       case int(Type::RoCoBaRaCh):
         // channel
-        req.addr_vec[0] = slice_lower_bits(addr, addr_bits[0]);
+        channel_id = slice_lower_bits(addr, addr_bits[0]);
         // rank
-        req.addr_vec[(int)T::Level::Rank] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
-        // bank
-        req.addr_vec[(int)T::Level::Bank] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
 
-        // Col
-        req.addr_vec[(int)T::Level::Column] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
-
-        // Row
-        req.addr_vec[(int)T::Level::Row] =
-            slice_lower_bits(addr, addr_bits[(int)T::Level::Row]);
 
         break;
 
@@ -353,7 +329,7 @@ public:
         assert(false);
       }
     }
-    return req.addr_vec[0];
+    return channel_id;
   }
   bool send(Request req) override {
     req.addr_vec.resize(addr_bits.size());
@@ -363,7 +339,7 @@ public:
     // Each transaction size is 2^tx_bits, so first clear the lowest tx_bits
     // bits
     clear_lower_bits(addr, tx_bits);
-
+    auto bank=0;
     if (use_mapping_file) {
       apply_mapping(addr, req.addr_vec);
     } else {
@@ -403,10 +379,14 @@ public:
         req.addr_vec[(int)T::Level::Rank] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Rank]);
         // bank
+
         req.addr_vec[(int)T::Level::Bank] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Bank]);
-
+        bank=req.addr_vec[(int)T::Level::Bank];
         // Col
+        if(bank<0 or bank>16){
+          throw;
+        }
         req.addr_vec[(int)T::Level::Column] =
             slice_lower_bits(addr, addr_bits[(int)T::Level::Column]);
 
