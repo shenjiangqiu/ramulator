@@ -403,7 +403,7 @@ bool Trace::get_unfiltered_request(long& bubble_cnt, long& req_addr, Request::Ty
         req_type = Request::Type::READ;
     else if (line.substr(pos)[0] == 'W')
         req_type = Request::Type::WRITE;
-    else throw false;assert(false);
+    else throw false;
     return true;
 }
 
@@ -468,6 +468,6 @@ bool Trace::get_dramtrace_request(long& req_addr, Request::Type& req_type)
         req_type = Request::Type::READ;
     else if (line.substr(pos)[0] == 'W')
         req_type = Request::Type::WRITE;
-    else throw false;assert(false);
+    else throw false;
     return true;
 }
